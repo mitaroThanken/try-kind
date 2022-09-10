@@ -4,7 +4,7 @@ set -e
 WEB_UI_VERSION=v2.6.1
 
 # create cluster
-kind create cluster
+kind create cluster --config=config-cluster.yaml
 
 # trap
 trap "kind delete cluster" SIGINT
