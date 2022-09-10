@@ -1,11 +1,19 @@
 #!/bin/bash
 set -e
 
+METALLB_VERSION=v0.13.5
+
 # Create cluster
 kind create cluster --config=config-cluster.yaml
 
 # Trap
 trap "kind delete cluster" SIGINT
+
+# Install MetalLB
+kubectl get configmap kube-proxy -n kube-system -o yaml | \
+sed -e "s/strictARP: false/strictARP: true/" | \
+kubectl apply -f - -n kube-system
+kubectl apply -f "https://raw.githubusercontent.com/metallb/metallb/${METALLB_VERSION}/config/manifests/metallb-native.yaml"
 
 # Install dashboard
 # https://github.com/kubernetes/dashboard/tree/master?tab=readme-ov-file#installation
@@ -20,6 +28,8 @@ helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dash
 kubectl apply -f ./web-ui-sample-user.yaml
 
 # Wait for available
+echo "MetalLB starting..."
+kubectl wait deployment -n metallb-system controller --for condition=Available=True --timeout=2m
 echo "Web UI starting..."
 kubectl wait deployment -n kubernetes-dashboard kubernetes-dashboard-kong --for condition=Available=True --timeout=1m
 
