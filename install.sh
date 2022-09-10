@@ -6,9 +6,11 @@ set -x
 KIND_VERSION=v0.22.0
 KUBECTL_VERSION=v1.29.3
 HELM_VERSION=v3.14.4
+ISTIO_VERSION=1.21.1
 
 # ~/.local/bin
-LOCAL_BIN=${HOME}/.local/bin/
+LOCAL=${HOME}/.local/
+LOCAL_BIN=${LOCAL}/bin/
 mkdir -p ${LOCAL_BIN}
 
 # kind
@@ -45,3 +47,10 @@ tar -zxvf "helm-${HELM_VERSION}-linux-amd64.tar.gz"
 mv linux-amd64/helm ${LOCAL_BIN}
 rm -r linux-amd64
 rm helm-${HELM_VERSION}-linux-amd64.tar.gz*
+
+# istio
+if [ -d "${LOCAL}/istio-${ISTIO_VERSION}" ]; then
+    rm -r "${LOCAL}/istio-${ISTIO_VERSION}" 
+fi
+curl -L https://istio.io/downloadIstio | sh -
+mv "istio-${ISTIO_VERSION}" ${LOCAL}

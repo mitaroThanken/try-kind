@@ -23,6 +23,10 @@ kubectl apply -f - -n kube-system
 helm repo add metallb https://metallb.github.io/metallb
 helm upgrade --install metallb metallb/metallb --create-namespace --namespace metallb-system
 
+# Install istio
+istioctl install --set profile=demo -y
+kubectl label namespace default istio-injection=enabled
+
 # Install dashboard
 # https://github.com/kubernetes/dashboard/tree/master?tab=readme-ov-file#installation
 
