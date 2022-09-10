@@ -9,3 +9,7 @@ eval "$(kubectl completion bash)"
 
 # helm completion
 eval "$(helm completion bash)"
+
+# istio
+export PATH=$HOME/.local/istio-1.15.0/bin:$PATH
+eval "$(istioctl completion bash)"
