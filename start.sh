@@ -23,6 +23,27 @@ kubectl apply -f - -n kube-system
 helm repo add metallb https://metallb.github.io/metallb
 helm upgrade --install metallb metallb/metallb --create-namespace --namespace metallb-system
 
+# Wait for available
+echo "MetalLB starting..."
+kubectl wait --namespace metallb-system \
+                --for=condition=ready pod \
+                --selector=app.kubernetes.io/instance=metallb \
+                --timeout=2m
+
+# Install Contour and Envoy
+kubectl apply -f https://projectcontour.io/quickstart/contour.yaml
+
+# Wait for available
+echo "Contour and Envoy starting..."
+kubectl wait --namespace projectcontour \
+                --for=condition=ready pod \
+                --selector=app=contour \
+                --timeout=2m
+kubectl wait --namespace projectcontour \
+                --for=condition=ready pod \
+                --selector=app=envoy \
+                --timeout=2m
+
 # Install dashboard
 # https://github.com/kubernetes/dashboard/tree/master?tab=readme-ov-file#installation
 
@@ -36,16 +57,11 @@ helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dash
 kubectl apply -f ./web-ui-sample-user.yaml
 
 # Wait for available
-echo "MetalLB starting..."
-kubectl wait --namespace metallb-system \
-                --for=condition=ready pod \
-                --selector=app.kubernetes.io/instance=metallb \
-                --timeout=90s
 echo "Web UI starting..."
 kubectl wait --namespace kubernetes-dashboard \
                 --for=condition=ready pod \
                 --selector=app.kubernetes.io/instance=kubernetes-dashboard \
-                --timeout=90s
+                --timeout=2m
 
 # Setup address pool used by loadbalancers
 # https://kind.sigs.k8s.io/docs/user/loadbalancer/#setup-address-pool-used-by-loadbalancers
