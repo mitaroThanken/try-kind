@@ -3,9 +3,9 @@ set -e
 set -x
 
 # versions
-KIND_VERSION=v0.15.0
-KUBECTL_VERSION=v1.25.0
-HELM_VERSION=v3.9.4
+KIND_VERSION=v0.22.0
+KUBECTL_VERSION=v1.29.3
+HELM_VERSION=v3.14.4
 
 # ~/.local/bin
 LOCAL_BIN=${HOME}/.local/bin/
