@@ -31,18 +31,46 @@ kubectl wait --namespace metallb-system \
                 --timeout=2m
 
 # Install Contour and Envoy
-kubectl apply -f https://projectcontour.io/quickstart/contour.yaml
+kubectl apply -f https://projectcontour.io/quickstart/contour-gateway-provisioner.yaml
 
 # Wait for available
-echo "Contour and Envoy starting..."
+echo "Contour Gateway Provisioner starting..."
 kubectl wait --namespace projectcontour \
                 --for=condition=ready pod \
-                --selector=app=contour \
+                --selector=control-plane=contour-gateway-provisioner \
                 --timeout=2m
-kubectl wait --namespace projectcontour \
-                --for=condition=ready pod \
-                --selector=app=envoy \
-                --timeout=2m
+
+# patch
+kubectl apply -f - <<EOF
+kind: GatewayClass
+apiVersion: gateway.networking.k8s.io/v1
+metadata:
+  name: contour
+spec:
+  controllerName: projectcontour.io/gateway-controller
+EOF
+kubectl apply -f - <<EOF
+kind: Gateway
+apiVersion: gateway.networking.k8s.io/v1
+metadata:
+  name: contour
+  namespace: projectcontour
+spec:
+  gatewayClassName: contour
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: https
+      protocol: projectcontour.io/https
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+EOF
 
 # Install dashboard
 # https://github.com/kubernetes/dashboard/tree/master?tab=readme-ov-file#installation
