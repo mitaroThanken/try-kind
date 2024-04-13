@@ -26,9 +26,9 @@ helm upgrade --install metallb metallb/metallb --create-namespace --namespace me
 # Install dashboard
 # https://github.com/kubernetes/dashboard/tree/master?tab=readme-ov-file#installation
 
-# Add kubernetes-dashboard repository
+## Add kubernetes-dashboard repository
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-# Deploy a Helm Release named "kubernetes-dashboard" using the kubernetes-dashboard chart
+## Deploy a Helm Release named "kubernetes-dashboard" using the kubernetes-dashboard chart
 helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
 
 # Creating sample user
