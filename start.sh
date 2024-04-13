@@ -12,8 +12,8 @@ trap "kind delete cluster" SIGINT
 # Install MetalLB
 # https://metallb.universe.tf/installation/
 
-# Preparation
-# https://metallb.universe.tf/installation/#preparation
+## Preparation
+## https://metallb.universe.tf/installation/#preparation
 kubectl get configmap kube-proxy -n kube-system -o yaml | \
 sed -e "s/strictARP: false/strictARP: true/" | \
 kubectl apply -f - -n kube-system
@@ -22,6 +22,23 @@ kubectl apply -f - -n kube-system
 ## https://metallb.universe.tf/installation/#installation-with-helm
 helm repo add metallb https://metallb.github.io/metallb
 helm upgrade --install metallb metallb/metallb --create-namespace --namespace metallb-system
+
+# Wait for available
+echo "MetalLB starting..."
+kubectl wait --namespace metallb-system \
+                --for=condition=ready pod \
+                --selector=app.kubernetes.io/instance=metallb \
+                --timeout=2m
+
+# Install Ingress NGINX
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+
+# Wait for available
+echo "Ingress NGINX starting..."
+kubectl wait --namespace ingress-nginx \
+                --for=condition=ready pod \
+                --selector=app.kubernetes.io/component=controller \
+                --timeout=90s
 
 # Install dashboard
 # https://github.com/kubernetes/dashboard/tree/master?tab=readme-ov-file#installation
@@ -36,16 +53,11 @@ helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dash
 kubectl apply -f ./web-ui-sample-user.yaml
 
 # Wait for available
-echo "MetalLB starting..."
-kubectl wait --namespace metallb-system \
-                --for=condition=ready pod \
-                --selector=app.kubernetes.io/instance=metallb \
-                --timeout=90s
 echo "Web UI starting..."
 kubectl wait --namespace kubernetes-dashboard \
                 --for=condition=ready pod \
                 --selector=app.kubernetes.io/instance=kubernetes-dashboard \
-                --timeout=90s
+                --timeout=2m
 
 # Setup address pool used by loadbalancers
 # https://kind.sigs.k8s.io/docs/user/loadbalancer/#setup-address-pool-used-by-loadbalancers
