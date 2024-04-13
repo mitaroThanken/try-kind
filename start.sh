@@ -10,10 +10,18 @@ kind create cluster --config=config-cluster.yaml
 trap "kind delete cluster" SIGINT
 
 # Install MetalLB
+# https://metallb.universe.tf/installation/
+
+# Preparation
+# https://metallb.universe.tf/installation/#preparation
 kubectl get configmap kube-proxy -n kube-system -o yaml | \
 sed -e "s/strictARP: false/strictARP: true/" | \
 kubectl apply -f - -n kube-system
-kubectl apply -f "https://raw.githubusercontent.com/metallb/metallb/${METALLB_VERSION}/config/manifests/metallb-native.yaml"
+
+## Installation With Helm
+## https://metallb.universe.tf/installation/#installation-with-helm
+helm repo add metallb https://metallb.github.io/metallb
+helm upgrade --install metallb metallb/metallb --create-namespace --namespace metallb-system
 
 # Install dashboard
 # https://github.com/kubernetes/dashboard/tree/master?tab=readme-ov-file#installation
@@ -31,7 +39,7 @@ kubectl apply -f ./web-ui-sample-user.yaml
 echo "MetalLB starting..."
 kubectl wait --namespace metallb-system \
                 --for=condition=ready pod \
-                --selector=app=metallb \
+                --selector=app.kubernetes.io/instance=metallb \
                 --timeout=90s
 echo "Web UI starting..."
 kubectl wait --namespace kubernetes-dashboard \
